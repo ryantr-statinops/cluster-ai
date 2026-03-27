@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cluster — AI-Powered Enterprise OS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            mono: ['Space Mono', 'monospace'],
+          },
+          colors: {
+            bg: '#080808',
+            surface: '#0f0f0f',
+            border: '#1a1a1a',
+            muted: '#2a2a2a',
+            dim: '#555',
+            subtle: '#888',
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.7s ease forwards',
+            'pulse-slow': 'pulse 4s ease-in-out infinite',
+            'spin-slow': 'spin 20s linear infinite',
+            'grid-scroll': 'gridScroll 30s linear infinite',
+          },
+          keyframes: {
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(24px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            gridScroll: {
+              '0%': { backgroundPosition: '0 0' },
+              '100%': { backgroundPosition: '40px 40px' },
+            },
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    :root {
+      --grad: linear-gradient(135deg, #06b6d4 0%, #67e8f9 40%, #ffffff 100%);
+      --grad-text: linear-gradient(135deg, #22d3ee 0%, #a5f3fc 50%, #ffffff 100%);
+      --glow: 0 0 40px rgba(6, 182, 212, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: #080808;
+      color: #e5e5e5;
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Gradient text */
+    .grad-text {
+      background: var(--grad-text);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Gradient border card */
+    .grad-border {
+      position: relative;
+      background: #0f0f0f;
+    }
+    .grad-border::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(6,182,212,0.4) 0%, rgba(255,255,255,0.05) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* CTA Button */
+    .btn-primary {
+      background: var(--grad);
+      color: #000;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 14px 32px;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.3s;
+    }
+    .btn-primary:hover::after { background: rgba(255,255,255,0.15); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(6,182,212,0.4); }
+
+    .btn-ghost {
+      border: 1px solid rgba(6,182,212,0.3);
+      color: #a5f3fc;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 13px 28px;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+    .btn-ghost:hover {
+      border-color: rgba(6,182,212,0.8);
+      background: rgba(6,182,212,0.05);
+      color: #fff;
+    }
+
+    /* Animated grid background */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(6,182,212,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6,182,212,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridScroll 30s linear infinite;
+    }
+
+    /* Dot pattern */
+    .dot-pattern {
+      background-image: radial-gradient(circle, rgba(6,182,212,0.12) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* Glow orb */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Horizontal rule */
+    .hr-grad {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(6,182,212,0.3), transparent);
+    }
+
+    /* Mono label */
+    .label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #06b6d4;
+    }
+
+    /* Architecture layer */
+    .arch-layer {
+      transition: all 0.3s ease;
+    }
+    .arch-layer:hover {
+      transform: translateX(6px);
+      border-color: rgba(6,182,212,0.5) !important;
+    }
+
+    /* Roadmap item */
+    .roadmap-item { transition: all 0.3s ease; }
+    .roadmap-item:hover { transform: translateY(-3px); }
+
+    /* Fade-in on scroll */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Nav backdrop */
+    .nav-blur {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(8, 8, 8, 0.85);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    /* Cursor blink */
+    .cursor::after {
+      content: '|';
+      animation: blink 1s step-end infinite;
+      color: #06b6d4;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    /* Tag pill */
+    .tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      padding: 4px 10px;
+      border-radius: 2px;
+      background: rgba(6,182,212,0.08);
+      border: 1px solid rgba(6,182,212,0.2);
+      color: #67e8f9;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #080808; }
+    ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+
+    /* Focus ring */
+    a:focus-visible { outline: 2px solid #06b6d4; outline-offset: 4px; }
+
+    @media (max-width: 768px) {
+      .orb { filter: blur(50px); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     NAVBAR
+════════════════════════════════════════ -->
+<nav class="nav-blur fixed top-0 left-0 right-0 z-50">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <!-- Logo -->
+    <div class="flex items-center gap-3">
+      <div class="w-7 h-7 relative">
+        <div class="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-0.5">
+          <div class="rounded-sm" style="background: var(--grad-text); background: linear-gradient(135deg,#06b6d4,#fff);"></div>
+          <div class="rounded-sm bg-cyan-500 opacity-60"></div>
+          <div class="rounded-sm bg-cyan-500 opacity-40"></div>
+          <div class="rounded-sm bg-cyan-400 opacity-20"></div>
+        </div>
+      </div>
+      <span class="font-display font-800 text-white tracking-wider text-lg">CLUSTER</span>
+    </div>
+
+    <!-- Nav links (desktop) -->
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#focus" class="label text-subtle hover:text-cyan-400 transition-colors">Tính năng</a>
+      <a href="#architecture" class="label text-subtle hover:text-cyan-400 transition-colors">Kiến trúc</a>
+      <a href="#roadmap" class="label text-subtle hover:text-cyan-400 transition-colors">Roadmap</a>
+      <a href="#stack" class="label text-subtle hover:text-cyan-400 transition-colors">Stack</a>
+    </div>
+
+    <!-- CTA -->
+    <a href="#contact" class="btn-primary text-xs hidden sm:inline-block">Liên hệ</a>
+
+    <!-- Mobile menu toggle (visual only for demo) -->
+    <button class="sm:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+      <span class="w-5 h-px bg-cyan-400"></span>
+      <span class="w-5 h-px bg-white opacity-50"></span>
+      <span class="w-3 h-px bg-white opacity-30"></span>
+    </button>
+  </div>
+</nav>
+
+
+<!-- ═══════════════════════════════════════
+     HERO SECTION
+════════════════════════════════════════ -->
+<section class="relative min-h-screen flex flex-col justify-center overflow-hidden pt-20">
+
+  <!-- Grid background -->
+  <div class="absolute inset-0 grid-bg opacity-60"></div>
+
+  <!-- Glow orbs -->
+  <div class="orb w-96 h-96 top-20 -left-32" style="background: rgba(6,182,212,0.12);"></div>
+  <div class="orb w-80 h-80 bottom-20 right-0" style="background: rgba(103,232,249,0.06);"></div>
+  <div class="orb w-64 h-64 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style="background: rgba(6,182,212,0.05);"></div>
+
+  <div class="relative z-10 max-w-6xl mx-auto px-6 py-20 md:py-28">
+
+    <!-- Status badge -->
+    <div class="inline-flex items-center gap-2.5 mb-8 px-4 py-2 rounded-full border border-border bg-surface">
+      <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+      <span class="label">R&D Phase — In Progress</span>
+    </div>
+
+    <!-- Main headline -->
+    <div class="max-w-4xl mb-8">
+      <h1 class="font-display font-800 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight tracking-tight mb-2">
+        <span class="text-white">Quản lý &amp; điều hành</span>
+      </h1>
+      <h1 class="font-display font-800 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight tracking-tight mb-2">
+        <span class="grad-text">doanh nghiệp hiệu quả</span>
+      </h1>
+      <h1 class="font-display font-800 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight tracking-tight">
+        <span class="text-white opacity-60">bằng AI Agent &amp; ERP.</span>
+      </h1>
+    </div>
+
+    <!-- Sub -->
+    <p class="text-subtle font-mono text-sm leading-relaxed max-w-xl mb-12">
+      Cluster tích hợp AI Orchestrator với hệ thống ERP hiện đại — tự động hóa quy trình vận hành, kết nối dữ liệu thời gian thực và ra quyết định thông minh hơn.
+    </p>
+
+    <!-- CTAs -->
+    <div class="flex flex-wrap items-center gap-4">
+      <a href="#focus" class="btn-primary">
+        Xem tài liệu →
+      </a>
+      <a href="#architecture" class="btn-ghost">
+        Khám phá kiến trúc
+      </a>
+    </div>
+
+    <!-- Stats row -->
+    <div class="mt-20 grid grid-cols-3 gap-6 max-w-lg">
+      <div>
+        <div class="font-display font-700 text-2xl grad-text">3</div>
+        <div class="label text-dim mt-1">Layer architecture</div>
+      </div>
+      <div class="border-l border-border pl-6">
+        <div class="font-display font-700 text-2xl grad-text">AI-first</div>
+        <div class="label text-dim mt-1">Design approach</div>
+      </div>
+      <div class="border-l border-border pl-6">
+        <div class="font-display font-700 text-2xl grad-text">2025</div>
+        <div class="label text-dim mt-1">Target launch</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40">
+    <span class="label text-xs">scroll</span>
+    <div class="w-px h-12 bg-gradient-to-b from-cyan-500 to-transparent"></div>
+  </div>
+</section>
+
+
+<div class="hr-grad my-0"></div>
+
+
+<!-- ═══════════════════════════════════════
+     CORE FOCUS
+════════════════════════════════════════ -->
+<section id="focus" class="relative py-24 md:py-32 overflow-hidden">
+
+  <div class="orb w-72 h-72 top-0 right-20 opacity-50" style="background: rgba(6,182,212,0.08);"></div>
+
+  <div class="max-w-6xl mx-auto px-6">
+
+    <div class="reveal mb-16">
+      <div class="label mb-4">// 01 — Core Focus</div>
+      <h2 class="font-display font-700 text-3xl md:text-4xl text-white mb-4">
+        Tích hợp AI vào quy trình <br class="hidden md:block" />
+        <span class="grad-text">vận hành thực tế</span>
+      </h2>
+      <p class="text-subtle text-sm max-w-lg leading-relaxed">
+        Không cần thay thế toàn bộ công cụ quen thuộc. Cluster hoạt động trên nền tảng bạn đang dùng, thêm lớp trí tuệ nhân tạo để tự động hóa và tối ưu hóa.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <!-- Card 1 -->
+      <div class="reveal grad-border rounded p-6 group cursor-default" style="transition-delay: 0.1s">
+        <div class="w-10 h-10 mb-6 rounded flex items-center justify-center" style="background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2);">
+          <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-700 text-white text-lg mb-3">Google Sheets Integration</h3>
+        <p class="text-subtle text-sm leading-relaxed mb-4">
+          AI Agent đọc, phân tích và ghi dữ liệu trực tiếp vào Google Sheets. Báo cáo tự động, không cần nhập liệu thủ công.
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <span class="tag">Google Sheets API</span>
+          <span class="tag">Auto-sync</span>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="reveal grad-border rounded p-6 group cursor-default" style="transition-delay: 0.2s">
+        <div class="w-10 h-10 mb-6 rounded flex items-center justify-center" style="background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2);">
+          <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-700 text-white text-lg mb-3">AI Orchestrator</h3>
+        <p class="text-subtle text-sm leading-relaxed mb-4">
+          Điều phối nhiều AI Agent chạy song song: phân tích dữ liệu, gửi thông báo, cập nhật ERP — tất cả theo luồng logic bạn định nghĩa.
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <span class="tag">Multi-agent</span>
+          <span class="tag">Workflow Engine</span>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="reveal grad-border rounded p-6 group cursor-default" style="transition-delay: 0.3s">
+        <div class="w-10 h-10 mb-6 rounded flex items-center justify-center" style="background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2);">
+          <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-700 text-white text-lg mb-3">ERP Thời Gian Thực</h3>
+        <p class="text-subtle text-sm leading-relaxed mb-4">
+          Dashboard quản lý toàn bộ hoạt động doanh nghiệp: tài chính, nhân sự, kho hàng — cập nhật liên tục, không độ trễ.
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <span class="tag">Real-time</span>
+          <span class="tag">ERP Module</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flow diagram -->
+    <div class="reveal mt-16 grad-border rounded p-8" style="transition-delay: 0.15s">
+      <div class="label mb-6">// Luồng dữ liệu mẫu</div>
+      <div class="flex flex-wrap items-center justify-center gap-3 md:gap-0">
+
+        <!-- Step -->
+        <div class="flex flex-col items-center text-center w-28">
+          <div class="w-10 h-10 rounded border border-cyan-500/30 bg-cyan-500/10 flex items-center justify-center mb-2">
+            <span class="font-mono text-xs text-cyan-400">01</span>
+          </div>
+          <span class="text-xs text-subtle font-mono">Data Input</span>
+          <span class="text-xs text-dim font-mono">Google Sheets</span>
+        </div>
+
+        <div class="hidden md:block flex-1 h-px bg-gradient-to-r from-cyan-500/30 to-cyan-500/10 mx-2"></div>
+        <div class="md:hidden text-cyan-500/40 text-lg">↓</div>
+
+        <div class="flex flex-col items-center text-center w-28">
+          <div class="w-10 h-10 rounded border border-cyan-500/30 bg-cyan-500/10 flex items-center justify-center mb-2">
+            <span class="font-mono text-xs text-cyan-400">02</span>
+          </div>
+          <span class="text-xs text-subtle font-mono">AI Process</span>
+          <span class="text-xs text-dim font-mono">Orchestrator</span>
+        </div>
+
+        <div class="hidden md:block flex-1 h-px bg-gradient-to-r from-cyan-500/10 to-cyan-500/20 mx-2"></div>
+        <div class="md:hidden text-cyan-500/40 text-lg">↓</div>
+
+        <div class="flex flex-col items-center text-center w-28">
+          <div class="w-10 h-10 rounded border border-cyan-500/30 bg-cyan-500/10 flex items-center justify-center mb-2">
+            <span class="font-mono text-xs text-cyan-400">03</span>
+          </div>
+          <span class="text-xs text-subtle font-mono">Decision</span>
+          <span class="text-xs text-dim font-mono">Logic Layer</span>
+        </div>
+
+        <div class="hidden md:block flex-1 h-px bg-gradient-to-r from-cyan-500/20 to-cyan-500/40 mx-2"></div>
+        <div class="md:hidden text-cyan-500/40 text-lg">↓</div>
+
+        <div class="flex flex-col items-center text-center w-28">
+          <div class="w-10 h-10 rounded border border-white/20 bg-white/5 flex items-center justify-center mb-2">
+            <span class="font-mono text-xs text-white">04</span>
+          </div>
+          <span class="text-xs text-white font-mono">Output</span>
+          <span class="text-xs text-dim font-mono">ERP / Alert</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<div class="hr-grad"></div>
+
+
+<!-- ═══════════════════════════════════════
+     ARCHITECTURE
+════════════════════════════════════════ -->
+<section id="architecture" class="relative py-24 md:py-32 overflow-hidden">
+
+  <div class="dot-pattern absolute inset-0 opacity-30"></div>
+  <div class="orb w-80 h-80 bottom-0 left-10 opacity-40" style="background: rgba(6,182,212,0.07);"></div>
+
+  <div class="max-w-6xl mx-auto px-6 relative z-10">
+
+    <div class="reveal mb-16">
+      <div class="label mb-4">// 02 — Architecture</div>
+      <h2 class="font-display font-700 text-3xl md:text-4xl text-white mb-4">
+        Mô hình kiến trúc <span class="grad-text">3 lớp</span>
+      </h2>
+      <p class="text-subtle text-sm max-w-lg leading-relaxed">
+        Thiết kế tách biệt rõ ràng giữa Core Engine, Business Logic và Interface Layer — đảm bảo khả năng mở rộng và bảo trì dài hạn.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-12 items-start">
+
+      <!-- Architecture layers -->
+      <div class="space-y-4">
+
+        <!-- Layer 1: Core -->
+        <div class="reveal arch-layer rounded p-6 cursor-default"
+             style="border: 1px solid rgba(6,182,212,0.3); background: rgba(6,182,212,0.04); transition-delay:0.1s">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+              <div class="label text-cyan-400 mb-1">Layer 01</div>
+              <div class="w-8 h-0.5" style="background: var(--grad);"></div>
+            </div>
+            <div>
+              <h3 class="font-display font-700 text-white text-xl mb-2">CORE</h3>
+              <p class="text-subtle text-sm leading-relaxed mb-4">
+                Nền tảng hạ tầng: Database, Message Queue, AI Model Runtime, Authentication. Chạy độc lập, không phụ thuộc UI.
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <span class="tag">PostgreSQL</span>
+                <span class="tag">Redis</span>
+                <span class="tag">Model Runner</span>
+                <span class="tag">Auth Service</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layer 2: Logic -->
+        <div class="reveal arch-layer rounded p-6 cursor-default ml-4"
+             style="border: 1px solid rgba(103,232,249,0.2); background: rgba(103,232,249,0.03); transition-delay:0.2s">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+              <div class="label text-cyan-300 mb-1">Layer 02</div>
+              <div class="w-8 h-0.5 bg-cyan-300 opacity-50"></div>
+            </div>
+            <div>
+              <h3 class="font-display font-700 text-white text-xl mb-2">LOGIC</h3>
+              <p class="text-subtle text-sm leading-relaxed mb-4">
+                AI Orchestrator, Workflow Engine, Business Rules. Nơi các Agent được điều phối và quy trình được thực thi theo logic nghiệp vụ.
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <span class="tag">Agent Manager</span>
+                <span class="tag">Rule Engine</span>
+                <span class="tag">API Gateway</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layer 3: Interface -->
+        <div class="reveal arch-layer rounded p-6 cursor-default ml-8"
+             style="border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); transition-delay:0.3s">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+              <div class="label text-white/50 mb-1">Layer 03</div>
+              <div class="w-8 h-0.5 bg-white opacity-20"></div>
+            </div>
+            <div>
+              <h3 class="font-display font-700 text-white text-xl mb-2">INTERFACE</h3>
+              <p class="text-subtle text-sm leading-relaxed mb-4">
+                Web Dashboard, Mobile App, External Integrations (Google Sheets, Slack, Email). Lớp người dùng tương tác trực tiếp.
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <span class="tag">Web App</span>
+                <span class="tag">REST API</span>
+                <span class="tag">Webhooks</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Diagram visual -->
+      <div class="reveal" style="transition-delay: 0.2s">
+        <div class="grad-border rounded p-8 font-mono text-xs">
+          <div class="label mb-6">// cluster.architecture.v1</div>
+
+          <div class="space-y-1 text-dim">
+            <div class="text-cyan-400">┌─────────────────────────┐</div>
+            <div><span class="text-cyan-400">│</span>  <span class="text-white">INTERFACE LAYER</span>          <span class="text-cyan-400">│</span></div>
+            <div><span class="text-cyan-400">│</span>  Web · Mobile · API      <span class="text-cyan-400">│</span></div>
+            <div class="text-cyan-400">└────────────┬────────────┘</div>
+            <div class="pl-12 text-cyan-500">│</div>
+            <div class="pl-12 text-cyan-500">▼</div>
+            <div class="text-cyan-400">┌─────────────────────────┐</div>
+            <div><span class="text-cyan-400">│</span>  <span class="text-white">LOGIC LAYER</span>              <span class="text-cyan-400">│</span></div>
+            <div><span class="text-cyan-400">│</span>  Orchestrator · Rules    <span class="text-cyan-400">│</span></div>
+            <div class="text-cyan-400">└────────────┬────────────┘</div>
+            <div class="pl-12 text-cyan-500">│</div>
+            <div class="pl-12 text-cyan-500">▼</div>
+            <div class="text-cyan-400">┌─────────────────────────┐</div>
+            <div><span class="text-cyan-400">│</span>  <span class="text-white">CORE LAYER</span>               <span class="text-cyan-400">│</span></div>
+            <div><span class="text-cyan-400">│</span>  DB · Queue · AI Runtime <span class="text-cyan-400">│</span></div>
+            <div class="text-cyan-400">└─────────────────────────┘</div>
+          </div>
+
+          <div class="mt-6 pt-6 border-t border-border text-dim">
+            <span class="text-cyan-500">→</span> Separation of concerns<br/>
+            <span class="text-cyan-500">→</span> Horizontal scalability<br/>
+            <span class="text-cyan-500">→</span> Plugin-based extensions
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<div class="hr-grad"></div>
+
+
+<!-- ═══════════════════════════════════════
+     ROADMAP
+════════════════════════════════════════ -->
+<section id="roadmap" class="relative py-24 md:py-32 overflow-hidden">
+
+  <div class="orb w-80 h-80 top-0 right-0 opacity-30" style="background: rgba(6,182,212,0.08);"></div>
+
+  <div class="max-w-6xl mx-auto px-6">
+
+    <div class="reveal mb-16">
+      <div class="label mb-4">// 03 — Roadmap</div>
+      <h2 class="font-display font-700 text-3xl md:text-4xl text-white mb-4">
+        Lộ trình <span class="grad-text">phát triển</span>
+      </h2>
+    </div>
+
+    <!-- Timeline -->
+    <div class="relative">
+      <!-- Timeline line -->
+      <div class="hidden md:block absolute left-0 top-8 right-0 h-px" style="background: linear-gradient(90deg, rgba(6,182,212,0.5) 0%, rgba(6,182,212,0.5) 40%, rgba(255,255,255,0.1) 40%, rgba(255,255,255,0.05) 100%);"></div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+
+        <!-- 01 Ideation — Done -->
+        <div class="reveal roadmap-item" style="transition-delay: 0.1s">
+          <!-- Dot -->
+          <div class="hidden md:flex items-center mb-6">
+            <div class="w-4 h-4 rounded-full relative" style="background: var(--grad);">
+              <div class="absolute inset-0 rounded-full animate-ping" style="background: rgba(6,182,212,0.3);"></div>
+            </div>
+          </div>
+          <div class="grad-border rounded p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-1.5 h-1.5 rounded-full" style="background: var(--grad);"></span>
+              <span class="label text-cyan-400">DONE</span>
+            </div>
+            <h3 class="font-display font-700 text-white text-lg mb-2">Ideation</h3>
+            <p class="text-subtle text-xs leading-relaxed">
+              Định nghĩa bài toán, nghiên cứu thị trường, xác định MVP scope và kiến trúc hệ thống tổng thể.
+            </p>
+            <div class="mt-4 text-dim text-xs font-mono">Q4 2024</div>
+          </div>
+        </div>
+
+        <!-- 02 R&D — Current -->
+        <div class="reveal roadmap-item" style="transition-delay: 0.2s">
+          <div class="hidden md:flex items-center mb-6">
+            <div class="w-4 h-4 rounded-full border-2 border-cyan-400 relative flex items-center justify-center">
+              <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+            </div>
+          </div>
+          <div class="rounded p-5" style="border: 1px solid rgba(6,182,212,0.5); background: rgba(6,182,212,0.06);">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+              <span class="label text-cyan-300">CURRENT</span>
+            </div>
+            <h3 class="font-display font-700 text-white text-lg mb-2">R&amp;D</h3>
+            <p class="text-subtle text-xs leading-relaxed">
+              Xây dựng prototype AI Orchestrator, test integration với Google Sheets và thiết kế database schema.
+            </p>
+            <div class="mt-4 text-cyan-400 text-xs font-mono">Q1–Q2 2025</div>
+          </div>
+        </div>
+
+        <!-- 03 Launch — Planned -->
+        <div class="reveal roadmap-item" style="transition-delay: 0.3s">
+          <div class="hidden md:flex items-center mb-6">
+            <div class="w-4 h-4 rounded-full border border-border bg-surface"></div>
+          </div>
+          <div class="rounded p-5" style="border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02);">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-1.5 h-1.5 rounded-full bg-dim"></span>
+              <span class="label text-dim">PLANNED</span>
+            </div>
+            <h3 class="font-display font-700 text-white/60 text-lg mb-2">Launch</h3>
+            <p class="text-dim text-xs leading-relaxed">
+              Ra mắt beta với nhóm doanh nghiệp SME đầu tiên. Thu thập feedback và tối ưu hiệu suất thực tế.
+            </p>
+            <div class="mt-4 text-dim text-xs font-mono">Q3 2025</div>
+          </div>
+        </div>
+
+        <!-- 04 Testing — Planned -->
+        <div class="reveal roadmap-item" style="transition-delay: 0.4s">
+          <div class="hidden md:flex items-center mb-6">
+            <div class="w-4 h-4 rounded-full border border-border bg-surface opacity-50"></div>
+          </div>
+          <div class="rounded p-5 opacity-60" style="border: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.01);">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-1.5 h-1.5 rounded-full bg-dim opacity-50"></span>
+              <span class="label text-dim">PLANNED</span>
+            </div>
+            <h3 class="font-display font-700 text-white/40 text-lg mb-2">Testing</h3>
+            <p class="text-dim text-xs leading-relaxed">
+              Stress test quy mô lớn, security audit, performance benchmarking và chuẩn bị cho production release.
+            </p>
+            <div class="mt-4 text-dim text-xs font-mono">Q4 2025</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<div class="hr-grad"></div>
+
+
+<!-- ═══════════════════════════════════════
+     TECH STACK
+════════════════════════════════════════ -->
+<section id="stack" class="relative py-24 md:py-32 overflow-hidden">
+
+  <div class="dot-pattern absolute inset-0 opacity-20"></div>
+  <div class="orb w-64 h-64 top-10 left-1/4 opacity-40" style="background: rgba(6,182,212,0.06);"></div>
+
+  <div class="max-w-6xl mx-auto px-6 relative z-10">
+
+    <div class="reveal mb-16 text-center">
+      <div class="label mb-4 justify-center flex">// 04 — Tech Stack</div>
+      <h2 class="font-display font-700 text-3xl md:text-4xl text-white mb-4">
+        Công nghệ <span class="grad-text">nền tảng</span>
+      </h2>
+      <p class="text-subtle text-sm max-w-md mx-auto">
+        Chọn lọc kỹ càng. Ưu tiên hiệu suất, độ tin cậy và khả năng mở rộng.
+      </p>
+    </div>
+
+    <!-- Stack grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+
+      <!-- Python -->
+      <div class="reveal grad-border rounded p-5 text-center group cursor-default" style="transition-delay:0.05s">
+        <div class="text-3xl mb-3">🐍</div>
+        <div class="font-display font-700 text-white text-sm mb-1">Python</div>
+        <div class="label text-dim">Backend / AI</div>
+      </div>
+
+      <!-- Docker -->
+      <div class="reveal grad-border rounded p-5 text-center group cursor-default" style="transition-delay:0.1s">
+        <div class="text-3xl mb-3">🐳</div>
+        <div class="font-display font-700 text-white text-sm mb-1">Docker</div>
+        <div class="label text-dim">Container</div>
+      </div>
+
+      <!-- AI Models -->
+      <div class="reveal grad-border rounded p-5 text-center group cursor-default" style="transition-delay:0.15s">
+        <div class="text-3xl mb-3">🤖</div>
+        <div class="font-display font-700 text-white text-sm mb-1">AI Models</div>
+        <div class="label text-dim">LLM / Vision</div>
+      </div>
+
+      <!-- PostgreSQL -->
+      <div class="reveal grad-border rounded p-5 text-center group cursor-default" style="transition-delay:0.2s">
+        <div class="text-3xl mb-3">🗄️</div>
+        <div class="font-display font-700 text-white text-sm mb-1">PostgreSQL</div>
+        <div class="label text-dim">Database</div>
+      </div>
+
+      <!-- Redis -->
+      <div class="reveal grad-border rounded p-5 text-center group cursor-default" style="transition-delay:0.25s">
+        <div class="text-3xl mb-3">⚡</div>
+        <div class="font-display font-700 text-white text-sm mb-1">Redis</div>
+        <div class="label text-dim">Cache / Queue</div>
+      </div>
+
+      <!-- Next.js -->
+      <div class="reveal grad-border rounded p-5 text-center group cursor-default" style="transition-delay:0.3s">
+        <div class="text-3xl mb-3">▲</div>
+        <div class="font-display font-700 text-white text-sm mb-1">Next.js</div>
+        <div class="label text-dim">Frontend</div>
+      </div>
+
+    </div>
+
+    <!-- Stack note -->
+    <div class="reveal mt-8 text-center" style="transition-delay: 0.2s">
+      <p class="text-dim text-xs font-mono">
+        * Stack đang trong giai đoạn R&D — có thể thay đổi theo kết quả benchmark
+      </p>
+    </div>
+
+  </div>
+</section>
+
+
+<div class="hr-grad"></div>
+
+
+<!-- ═══════════════════════════════════════
+     CONTACT
+════════════════════════════════════════ -->
+<section id="contact" class="relative py-24 md:py-32 overflow-hidden">
+
+  <div class="orb w-96 h-96 bottom-0 right-0 opacity-30" style="background: rgba(6,182,212,0.1);"></div>
+  <div class="orb w-64 h-64 top-0 left-0 opacity-20" style="background: rgba(6,182,212,0.08);"></div>
+
+  <div class="max-w-6xl mx-auto px-6 relative z-10">
+
+    <div class="max-w-2xl mx-auto text-center reveal">
+      <div class="label mb-6 justify-center flex">// 05 — Contact</div>
+      <h2 class="font-display font-700 text-3xl md:text-5xl text-white mb-6">
+        Bắt đầu cuộc trò chuyện<br/>
+        <span class="grad-text">cùng Cluster</span>
+      </h2>
+      <p class="text-subtle text-sm leading-relaxed mb-12 max-w-md mx-auto">
+        Bạn quan tâm đến giải pháp ERP + AI cho doanh nghiệp? Chúng tôi muốn lắng nghe về bài toán của bạn.
+      </p>
+
+      <!-- Contact card -->
+      <div class="grad-border rounded p-8 text-left">
+        <div class="grid md:grid-cols-2 gap-8">
+
+          <div class="space-y-6">
+            <div>
+              <div class="label text-dim mb-1">Email</div>
+              <a href="mailto:hello@cluster.ai" class="font-display text-white text-sm hover:text-cyan-400 transition-colors">
+                hello@cluster.ai
+              </a>
+            </div>
+            <div>
+              <div class="label text-dim mb-1">Founder</div>
+              <div class="font-display text-white text-sm">Nguyễn Văn A</div>
+            </div>
+            <div>
+              <div class="label text-dim mb-1">Location</div>
+              <div class="font-display text-white text-sm">Ho Chi Minh City, Vietnam</div>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <div>
+              <div class="label text-dim mb-1">LinkedIn</div>
+              <a href="#" class="font-display text-white text-sm hover:text-cyan-400 transition-colors">
+                linkedin.com/in/cluster-ai
+              </a>
+            </div>
+            <div>
+              <div class="label text-dim mb-1">GitHub</div>
+              <a href="#" class="font-display text-white text-sm hover:text-cyan-400 transition-colors">
+                github.com/cluster-ai
+              </a>
+            </div>
+            <div>
+              <div class="label text-dim mb-1">Status</div>
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span class="font-mono text-xs text-cyan-400">Open to conversations</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row gap-3">
+          <a href="mailto:hello@cluster.ai" class="btn-primary text-center">
+            Gửi email →
+          </a>
+          <a href="#" class="btn-ghost text-center">
+            Đặt lịch hẹn
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+════════════════════════════════════════ -->
+<footer class="border-t border-border py-10">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+
+      <!-- Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-6 h-6 relative">
+          <div class="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-0.5">
+            <div class="rounded-sm" style="background: linear-gradient(135deg,#06b6d4,#fff);"></div>
+            <div class="rounded-sm bg-cyan-500 opacity-60"></div>
+            <div class="rounded-sm bg-cyan-500 opacity-40"></div>
+            <div class="rounded-sm bg-cyan-400 opacity-20"></div>
+          </div>
+        </div>
+        <span class="font-display font-700 text-white tracking-wider">CLUSTER</span>
+      </div>
+
+      <!-- Links -->
+      <div class="flex items-center gap-6">
+        <a href="#focus" class="label text-dim hover:text-cyan-400 transition-colors">Features</a>
+        <a href="#architecture" class="label text-dim hover:text-cyan-400 transition-colors">Architecture</a>
+        <a href="#roadmap" class="label text-dim hover:text-cyan-400 transition-colors">Roadmap</a>
+      </div>
+
+      <!-- Copy -->
+      <div class="label text-dim">
+        © 2025 Cluster. All rights reserved.
+      </div>
+
+    </div>
+
+    <!-- Bottom line -->
+    <div class="mt-8 font-mono text-xs text-dim text-center">
+      Built with ♥ in Vietnam · AI-Powered Enterprise OS · v0.1-alpha
+    </div>
+  </div>
+</footer>
+
+
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT — Scroll reveal + Nav active
+════════════════════════════════════════ -->
+<script>
+  // Intersection Observer for reveal animations
+  const revealElements = document.querySelectorAll('.reveal');
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.12,
+    rootMargin: '0px 0px -40px 0px'
+  });
+
+  revealElements.forEach(el => observer.observe(el));
+
+  // Staggered delay for siblings
+  document.querySelectorAll('[style*="transition-delay"]').forEach(el => {
+    const delay = el.style.transitionDelay;
+    if (delay) {
+      el.style.transitionDelay = delay;
+    }
+  });
+
+  // Active nav on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+  const navObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.remove('text-cyan-400');
+          link.classList.add('text-subtle');
+          if (link.getAttribute('href') === '#' + entry.target.id) {
+            link.classList.add('text-cyan-400');
+            link.classList.remove('text-subtle');
+          }
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+
+  sections.forEach(s => navObserver.observe(s));
+</script>
+
+</body>
+</html>
